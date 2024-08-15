@@ -1,7 +1,9 @@
+import Chat from "./client";
+
 export default async function Page() {
   return (
     <div>
-      <h1>CHAT</h1>
+      <Chat />
     </div>
   );
 }

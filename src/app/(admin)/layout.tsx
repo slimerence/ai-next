@@ -19,13 +19,13 @@ export default async function BasicLayout({ children, params }: Props) {
 
   return (
     <AntdRegistry>
-      {/* <Auth> */}
-      <Layout count={serverProps?.count}>
-        <Suspense fallback={<Skeleton avatar paragraph={{ rows: 4 }} />}>
-          {children}
-        </Suspense>
-      </Layout>
-      {/* </Auth> */}
+      <Auth>
+        <Layout count={serverProps?.count}>
+          <Suspense fallback={<Skeleton avatar paragraph={{ rows: 4 }} />}>
+            {children}
+          </Suspense>
+        </Layout>
+      </Auth>
     </AntdRegistry>
   );
 }

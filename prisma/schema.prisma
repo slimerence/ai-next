@@ -18,33 +18,6 @@ enum Role {
   ADMIN
 }
 
-model Account {
-  id                 String    @id @default(cuid())
-  userId             String
-  providerType       String
-  providerId         String
-  providerAccountId  String
-  refreshToken       String?
-  accessToken        String?
-  accessTokenExpires DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  user               User      @relation(fields: [userId], references: [id])
-
-  @@unique([providerId, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  expires      DateTime
-  sessionToken String   @unique
-  accessToken  String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id])
-}
-
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -55,17 +28,26 @@ model User {
   createdAt     DateTime  @default(now())
   role          Role      @default(USER)
   updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+  chats         Chat[]    // User can have multiple Chats
+  messages      Message[] // User can have multiple Messages
 }
 
-model VerificationRequest {
-  id         String   @id @default(cuid())
-  identifier String
-  token      String   @unique
-  expires    DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Chat {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  messages  Message[]
+}
 
-  @@unique([identifier, token])
+model Message {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
 }

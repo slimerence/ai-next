@@ -28,7 +28,7 @@ interface IProps {
 }
 
 const onLogout = () => {
-  signOut({ redirect: false, callbackUrl: "/" });
+  signOut({ redirect: true, callbackUrl: "/" });
 };
 
 const items: MenuProps["items"] = [
@@ -39,7 +39,6 @@ const items: MenuProps["items"] = [
         target="_self"
         onClick={onLogout}
         rel="noopener noreferrer"
-        href="/"
       >
         退出登录
       </a>
