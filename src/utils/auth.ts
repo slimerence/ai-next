@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import prisma from "@/lib/prisma";
+// import prisma from "@/lib/prisma";
 import type {
   GetServerSidePropsContext,
   NextApiRequest,
@@ -10,9 +9,24 @@ import type {
 import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import { randomBytes, randomUUID } from "crypto";
+import Email from "next-auth/providers/email";
+
+import { PrismaClient } from "@prisma/client";
+import { CustomPrismaAdapter } from "./adapter";
+
+const prisma = new PrismaClient();
 
 const config: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  debug: true,
+  adapter: CustomPrismaAdapter(prisma),
+
+  // pages:{
+  //   signIn: '/auth/signin',
+  //   signOut: '/auth/signout',
+  //   error: '/auth/error',
+  //   verifyRequest: '/auth/verify-request',
+  // },
+  
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -45,17 +59,28 @@ const config: NextAuthOptions = {
         } catch (error) {
           console.log("🚀 ~ file: route.ts:31 ~ authorize ~ error", error);
           return null;
-        } finally {
-          prisma.$disconnect();
-        }
+        } 
       },
+    }),
+    Email({
+      server: {
+        secure: true,
+        host: process.env.EMAIL_SERVER_HOST,
+        port: process.env.EMAIL_SERVER_PORT,
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+      
     }),
   ],
   session: {
     // 默认情况下是 `"jwt"`，即会话信息存储在加密的 JWT (JWE) 中，并存放在会话 cookie 中。
     // 如果使用了 `adapter`，则默认会改为 `"database"`。
     // strategy: "database",
-    strategy: "jwt",
+    strategy: "database",
 
     // 秒 - 闲置会话过期时间，超过这个时间未操作会话将不再有效。
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -71,6 +96,10 @@ const config: NextAuthOptions = {
     },
   },
   callbacks: {
+    // 自定义登陆方法
+    async signIn({ user, account, email }) {
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -79,18 +108,25 @@ const config: NextAuthOptions = {
     },
     async session({ session, token, user }) {
       const returnSession: any = session;
-      console.log(
-        "🚀 ~ file: auth.ts ~ line 101 ~ session ~ session",
-        session,
-        token
-      );
+      // console.log(
+      //   "🚀 ~ file: auth.ts ~ line 101 ~ session ~ session",
+      //   session,
+      //   token,
+      //   user
+      // );
 
       // Send properties to the client, like an access_token and user id from a provider.
-      returnSession.accessToken = token.jti;
-      returnSession.user.id = token.id;
+      returnSession.accessToken = token?.accessToken;
+      returnSession.user.id = token?.id || user?.id;
       return returnSession;
     },
-  
+    async redirect({ url, baseUrl }) {
+      // 登录成功后，如果callbackUrl没有特别指定，重定向到/home
+      if (url === baseUrl) {
+        return baseUrl + "/home";
+      }
+      return url;
+    },
   },
 };
 

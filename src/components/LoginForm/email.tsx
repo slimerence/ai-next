@@ -5,21 +5,18 @@ import { useRouter } from "next/navigation";
 
 type FieldType = {
   email?: string;
-  pwd?: string;
-  code?: string;
-  remember?: string;
 };
 
-export default function LoginForm() {
+export default function EmailForm() {
   const [form] = Form.useForm();
   const router = useRouter();
   const onFinish: FormProps<FieldType>["onFinish"] = async (values: any) => {
-    const { email, pwd } = values;
+    const { email } = values;
     try {
-      const result = await signIn("credentials", {
+      const result = await signIn("email", {
         email,
-        password: pwd,
-        redirect: false,
+        redirect: true,
+        callbackUrl: "/home",
       });
       if (result?.ok && result?.status === 200) {
         // message.success("Login Success");
@@ -31,7 +28,7 @@ export default function LoginForm() {
   };
   return (
     <div className="">
-      <h2 className="text-xl font-bold">Credentials</h2>
+      <h2 className="text-xl font-bold">Email</h2>
       <Form
         name="basic"
         className=""
@@ -59,17 +56,6 @@ export default function LoginForm() {
           ]}
         >
           <Input placeholder="email address" size="large" variant="filled" />
-        </Form.Item>
-
-        <Form.Item<FieldType>
-          name="pwd"
-          rules={[{ required: true, message: "Please input password" }]}
-        >
-          <Input.Password
-            size="large"
-            placeholder="Please input password"
-            variant="filled"
-          />
         </Form.Item>
 
         <Form.Item wrapperCol={{ span: 24 }}>

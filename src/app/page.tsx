@@ -1,4 +1,5 @@
 import LoginForm from "@/components/LoginForm";
+import EmailForm from "@/components/LoginForm/email";
 import Image from "next/image";
 
 export default function Home() {
@@ -14,8 +15,9 @@ export default function Home() {
           priority
         />
       </div>
-      <div className="">
+      <div className="flex justify-between gap-3">
         <LoginForm />
+        <EmailForm />
       </div>
     </main>
   );

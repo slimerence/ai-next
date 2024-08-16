@@ -1,12 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 
 export const initUser = async () => {
+
   const prisma = new PrismaClient();
   try {
     // 校验重复数据
     let user = await prisma.user.findUnique({
       where: {
-        email: "admin@admin.com",
+        email: "475111519@qq.com",
       },
     });
 
@@ -14,7 +15,7 @@ export const initUser = async () => {
       user = await prisma.user.create({
         data: {
           name: "admin",
-          email: "admin@admin.com",
+          email: "475111519@qq.com",
           password: "123456",
           role: "ADMIN",
         },
@@ -46,6 +47,18 @@ export const initUser = async () => {
   } finally {
     await prisma.$disconnect();
   }
+};
+
+export const addUser = async () => {
+  const prisma = new PrismaClient();
+  const user = await prisma.user.create({
+    data: {
+      name: "user",
+      email: "user@demo.com",
+      password: "123456",
+      role: "USER",
+    },
+  });
 };
 export const fetchUsers = async (params: { page?: number }) => {
   const prisma = new PrismaClient();
@@ -79,11 +92,26 @@ export const fetchUsers = async (params: { page?: number }) => {
 export const deleteUser = async (id: string) => {
   const prisma = new PrismaClient();
   try {
-    await prisma.user.delete({
+    await prisma.user.update({
       where: {
         id,
       },
+      data:{
+        name: "deleted",
+      }
     });
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error };
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+export const trunkAllUsers = async () => {
+  const prisma = new PrismaClient();
+  try {
+    await prisma.user.deleteMany();
     return { success: true };
   } catch (error) {
     console.error(error);
